@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Description:
+  Backend Services SAM Template for Zindey Delivery
+
+Parameters:
+  CognitoUserPoolArn:
+    Type: String
+    Default: 'arn'
+
+Globals:
+  Function:
+      CodeUri: src/
+      Runtime: nodejs14.x
+      Timeout: 60
+      MemorySize: 256
+      Architecture:
+        - x86_64
+      Layers:
+        - arn:aws:lambda:us-east-1:213198851588:layer:uuid:1
+        - arn:aws:lambda:us-east-1:213198851588:layer:jimp:1
+
+  Resources:
+
+  #--------Payment Functions --------
+    GetPaymentPlans:
+      Type: AWS::Serverless::Function
+      Properties:
+        Handler: payment/get_payment_plans.lambdaHandler
+        Events:
+          GetPaymentPlansEvent:
+            Type: Api 
+            Properties:
+              RestApiId: !Ref ZindeyApi
+              Path: payment
+              Method: GET
+              Auth:
+                Authorizer: CognitoAuthorizer
+        Policies:
+          - DinamoDBCrudPolicy:
+              TableName:  !Ref PaymentTable
+
+#-------- Dynamo DB Tables --------  
+  PaymentTable:
+    Type: AWS::DynamoDB:Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: 'id'
+          AttributeType:  'S'
+      KeySchema:
+        - AttributeName: 'id'
+          KeyType:  'HASH'
+      ProvisionedThroughput:
+        ReadCapacityUnits:  5
+        WriteCapacityUnits: 5
+
+#------------ API REST ------------
+  ZindeyDeliveryAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName:  dev
+      MethodSettings: #Enable CloudWatch logs
+        - LoggingLevel: INFO
+          ResourcePath: '/*'  # allows for logging on any resource
+          HttpMethod: '*' # allows for logging on any method
+      GatewayResponses:
+        UNAUTHORIZED:
+          ResponseTemplates:
+            "application/json": '{  "message":  "Invalid Authorization Token" }'
+        BAD_REQUEST_BODY:
+          ResponseTemplates:
+            "application/json": '{  "message":  "$context.error.validationErrorString" }'
+        Auth:
+          Authorizers:
+            CognitoAuthorizer:
+              UserPoolArn: !Ref CognitoUserPoolArn
+
+
+
+
+
+
+      
