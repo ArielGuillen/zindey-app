@@ -1,0 +1,13 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "zindey-app"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1x0e3zjlhnw43"
+s3_prefix = "zindey-app"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "AccountTableName=\"zindey-app-account-table\" BusinessTableName=\"zindey-app-business-table\" PaymentTableName=\"zindey-app-payment-table\" PolicyTableName=\"zindey-app-policy-table\" RoleTableName=\"zindey-app-role-table\" ImagesS3BucketName=\"zindey-app-business-bucket\" CognitoUserPoolArn=\"arn:aws:cognito-idp:us-east-1:916649391203:userpool/us-east-1_EtLMrda40\""
+image_repositories = []
+disable_rollback = true

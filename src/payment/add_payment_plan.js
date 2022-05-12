@@ -7,14 +7,23 @@ exports.lambdaHandler = async (event) => {
     //create the response object
     const response = {
         statusCode: 200,
-        body: JSON.stringify({ message: "Get payment plans successfully!" })
+        body: JSON.stringify({ message: "Payment plan added successfully!" })
     };
 
     try {
+        
+        //Get the body request
+        const body = JSON.parse( event.body );
+        let item;
+        
+        const dynamoParams = { 
+            TableName: TABLE_NAME,
+            Item: item
+        };
 
-        const { Items, Count } = dynamo.query({ TableName: TABLE_NAME }).promise();
+        const dynamoResponse = dynamo.put( dynamoParams ).promise();
         response.body = JSON.stringif({
-            message: "Get Payment Plans list succesfully",
+            message: "Payment plan added successfully",
             Count,
             Items
         });
@@ -24,7 +33,7 @@ exports.lambdaHandler = async (event) => {
         console.log(error);
         response.statusCode = 400;
         response.body = JSON.stringify({
-            message: "Failed to get the payment plans list",
+            message: "Failed to add the payment plan",
             error: error.message
         });
 
